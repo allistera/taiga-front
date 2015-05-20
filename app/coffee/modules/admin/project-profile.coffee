@@ -113,7 +113,7 @@ module.controller("ProjectProfileController", ProjectProfileController)
 ## Project Profile Directive
 #############################################################################
 
-ProjectProfileDirective = ($repo, $confirm, $loading, $navurls, $location, projectsService) ->
+ProjectProfileDirective = ($repo, $confirm, $loading, $navurls, $location, projectService) ->
     link = ($scope, $el, $attrs) ->
         form = $el.find("form").checksley({"onlyOneErrorElement": true})
         submit = debounce 2000, (event) =>
@@ -122,7 +122,6 @@ ProjectProfileDirective = ($repo, $confirm, $loading, $navurls, $location, proje
             return if not form.validate()
 
             $loading.start(submitButton)
-
             promise = $repo.save($scope.project)
             promise.then ->
                 $loading.finish(submitButton)
@@ -130,7 +129,8 @@ ProjectProfileDirective = ($repo, $confirm, $loading, $navurls, $location, proje
                 newUrl = $navurls.resolve("project-admin-project-profile-details", {project: $scope.project.slug})
                 $location.path(newUrl)
                 $scope.$emit("project:loaded", $scope.project)
-                projectsService.fetchProjects()
+
+                projectService.fetchProject()
 
             promise.then null, (data) ->
                 $loading.finish(submitButton)
@@ -144,7 +144,7 @@ ProjectProfileDirective = ($repo, $confirm, $loading, $navurls, $location, proje
 
     return {link:link}
 
-module.directive("tgProjectProfile", ["$tgRepo", "$tgConfirm", "$tgLoading", "$tgNavUrls", "$tgLocation", "tgProjectsService", ProjectProfileDirective])
+module.directive("tgProjectProfile", ["$tgRepo", "$tgConfirm", "$tgLoading", "$tgNavUrls", "$tgLocation", "tgProjectService", ProjectProfileDirective])
 
 #############################################################################
 ## Project Default Values Directive
@@ -187,7 +187,7 @@ module.directive("tgProjectDefaultValues", ["$tgRepo", "$tgConfirm", "$tgLoading
 ## Project Modules Directive
 #############################################################################
 
-ProjectModulesDirective = ($repo, $confirm, $loading) ->
+ProjectModulesDirective = ($repo, $confirm, $loading, projectService) ->
     link = ($scope, $el, $attrs) ->
         form = $el.find("form").checksley()
         submit = =>
@@ -200,6 +200,8 @@ ProjectModulesDirective = ($repo, $confirm, $loading) ->
                 $loading.finish(target)
                 $confirm.notify("success")
                 $scope.$emit("project:loaded", $scope.project)
+
+                projectService.fetchProject()
 
             promise.then null, (data) ->
                 $loading.finish(target)
@@ -229,7 +231,7 @@ ProjectModulesDirective = ($repo, $confirm, $loading) ->
 
     return {link:link}
 
-module.directive("tgProjectModules", ["$tgRepo", "$tgConfirm", "$tgLoading", ProjectModulesDirective])
+module.directive("tgProjectModules", ["$tgRepo", "$tgConfirm", "$tgLoading", "tgProjectService", ProjectModulesDirective])
 
 
 #############################################################################
